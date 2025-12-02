@@ -1,46 +1,220 @@
-# Getting Started with Create React App
+# README — Striktly Powerhouse React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overzicht
 
-## Available Scripts
+Single-file React app met Tailwind-styling. Bevat:
 
-In the project directory, you can run:
+- Home pagina met secties: Hero, About, Methode, Target Audience, Atleten Highlights, Voeding, Pricing, Contact, Footer.
+- Tools pagina met 3 tools: RPE Calculator, Macro Calculator, Plate Loader.
+- Plate Loader heeft visuele bar/plate weergave en toggle voor competitie clips.
 
-### `npm start`
+App gebruikt geen externe router; wisselt pagina via interne state en scroll-anchors.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Tech stack
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- React (function components, hooks)
+- TailwindCSS classes
+- lucide-react icon set
 
-### `npm test`
+## Bestanden / structuur
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Huidige implementatie staat in één bestand:
 
-### `npm run build`
+- `App` (root)
+  - `HomePage`
+  - `ToolsPage`
+  - Tools:
+    - `RpeCalculator`
+    - `MacroCalculator`
+    - `PlateLoader`
+      - `PlateResultBlock`
+      - `PlateVisualizer`
+  - Helpers:
+    - `calculatePlatesPerSide`
+    - `plateColorClass`
+    - constants: `BAR_WEIGHT`, `COLLAR_WEIGHT_TOTAL`, `COMPETITION_PLATES`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Als je dit splitst:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+src/
+  App.tsx
+  pages/
+    HomePage.tsx
+    ToolsPage.tsx
+  tools/
+    RpeCalculator.tsx
+    MacroCalculator.tsx
+    PlateLoader.tsx
+  tools/plate/
+    PlateVisualizer.tsx
+    PlateResultBlock.tsx
+    plateMath.ts
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Pagina-navigatie
 
-### `npm run eject`
+Navbar gebruikt scroll naar secties op Home en een state-switch naar Tools.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- `scrollToSection(id)` zoekt element met `document.getElementById(id)` en `scrollIntoView`.
+- `currentPage` (state in App) bepaalt of HomePage of ToolsPage zichtbaar is.
+- Tools tab in navbar zet `currentPage = "tools"`.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Sectie-ids op Home:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- `about`
+- `method`
+- `target-audience`
+- `athletes`
+- `nutrition`
+- `pricing`
+- `contact`
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## ToolsPage gedrag
 
-## Learn More
+Tools tab laat een interne tool-switch zien:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- `activeTool` state (`"rpe" | "macro" | "plate"`)
+- Buttons wisselen state, geen route change.
+- Alleen de actieve tool wordt gerenderd.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### RPE Calculator
+
+- Input: gewicht, reps, RPE.
+- Validatie:
+  - gewicht > 0
+  - reps > 0
+  - RPE tussen 6 en 10
+- Output:
+  - geschatte 1RM (Epley)
+  - RiR (10 − RPE)
+  - RPE10 equivalent zolang noemer positief is
+
+### Macro Calculator
+
+- Input: geslacht, gewicht, lengte, leeftijd, activiteitsniveau, doel.
+- BMR via Mifflin-St Jeor.
+- TDEE = BMR × activity.
+- Doel:
+  - lose: −500 kcal
+  - maintain: 0
+  - gain: +300 kcal
+- Macro verdeling:
+  - eiwit: 2.2 g/kg
+  - vet: 25% kcal
+  - carbs: rest (nooit negatief)
+
+### Plate Loader
+
+- Input: totaal gewicht in stappen van 0.5 kg.
+- Toggle `includeClips`:
+  - aan: bar+clips = 25 kg
+  - uit: bar = 20 kg
+- Berekening:
+  - platesWeight = totalWeight − barSystemWeight
+  - sideWeight = platesWeight / 2
+  - greedy verdeling over `COMPETITION_PLATES`
+- Output:
+  - tekstuele lijst platen per kant
+  - visuele bar met platen links/rechts
+
+## Atleten Highlights
+
+Sectie op Home bedoeld als eigen pagina-achtige blok zonder Instagram links. In de huidige app staat nog een placeholder met links.
+
+### Data-model
+
+Gebruik een array met `media`:
+
+```ts
+type AthleteHighlight = {
+  athlete: string;
+  title: string;
+  date?: string;
+  summary: string;
+  media: string[];
+  stats?: { label: string; value: string }[];
+};
+```
+
+### Media toevoegen
+
+1. Voeg `media` veld toe per highlight item.
+2. Render cover-image in card:
+
+```tsx
+<div className="aspect-square bg-zinc-950">
+  {post.media?.length ? (
+    <img
+      src={post.media[0]}
+      alt={post.title}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-zinc-500">
+      <Instagram size={40} />
+    </div>
+  )}
+</div>
+```
+
+3. Bestandslocatie:
+
+- Lokaal: plaats bestanden in `public/highlights/` en verwijs via `"/highlights/naam.jpg"`.
+- Extern: gebruik directe `.jpg/.png/.webp` urls.
+
+### Meerdere foto’s tonen (optioneel)
+
+```tsx
+{
+  post.media?.length > 1 && (
+    <div className="grid grid-cols-3 gap-2 mt-3">
+      {post.media.slice(0, 3).map((src, j) => (
+        <img key={j} src={src} alt="" className="h-20 w-full object-cover" />
+      ))}
+    </div>
+  );
+}
+```
+
+## Styles / theming
+
+- Hoofdkleuren: `zinc-950` achtergrond, `orange-500/600` accenten.
+- Tekst: wit hoofd, `zinc-400/500` secundair.
+- Cards: `bg-zinc-900` met `border-zinc-800`, hover naar orange border.
+- Geen inline CSS behalve keyframes in App.
+
+## Bekende issues in huidige canvas-versie
+
+- Duplicaat secties:
+  - Er staat een extra `section id="nutrition"` die per ongeluk opnieuw Atleten Highlights bevat.
+  - Fix: verwijder die duplicaat highlight-sectie en houd één nutrition-sectie over met uniek id.
+- Atleten Highlights linkt nog naar Instagram.
+  - Fix: vervang `<a href=...>` door lokale cards zonder links en gebruik het data-model hier boven.
+
+## Runnen
+
+Standaard React/Vite setup:
+
+```
+npm install
+npm run dev
+```
+
+Build:
+
+```
+npm run build
+npm run preview
+```
+
+## Aanpassen / uitbreiden
+
+- Nieuwe tool: voeg component toe, update `ToolsPage` buttons en `activeTool` mapping.
+- Nieuwe sectie op home: voeg `<section id="...">` toe en nieuwe navbar button die `scrollToSection` gebruikt.
+- Nieuwe platen: update `COMPETITION_PLATES` array en `plateColorClass`.
+
+## Validatie / randgevallen
+
+- Alle calculators blokkeren output op invalid input.
+- Plate loader accepteert alleen 0.5 kg stappen en minimaal bargewicht.
