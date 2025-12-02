@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/ertugrul013/powerlifting.nl/static/css/main.d5864580.css",
+    "main.js": "/ertugrul013/powerlifting.nl/static/js/main.88240612.js",
+    "static/js/453.57507e37.chunk.js": "/ertugrul013/powerlifting.nl/static/js/453.57507e37.chunk.js",
+    "index.html": "/ertugrul013/powerlifting.nl/index.html",
+    "main.d5864580.css.map": "/ertugrul013/powerlifting.nl/static/css/main.d5864580.css.map",
+    "main.88240612.js.map": "/ertugrul013/powerlifting.nl/static/js/main.88240612.js.map",
+    "453.57507e37.chunk.js.map": "/ertugrul013/powerlifting.nl/static/js/453.57507e37.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.d5864580.css",
+    "static/js/main.88240612.js"
+  ]
+}
